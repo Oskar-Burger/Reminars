@@ -1,0 +1,537 @@
+---
+title: 'Reminar2: intro to tidyverse'
+author: "oskar"
+date: "6/11/2021"
+output:
+  html_document:
+    toc: yes
+    toc_float: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+
+# load packages
+library(tidyverse)
+
+```
+
+## Before we begin
+
+Take notes in this rmd file! Start by saving a version to a logical place - a box folder for learning R, perhaps? We will talk about ways to conolidate our R-learning. Also - note that we are in a small room in a small group with people we already know. We don't have to get any particular place today. We are going to familiarize ourselves with code by looking at it and talking about it and we'll get where we get.
+
+## What is the tidyverse?
+
+A 'meta package' of inter-related functions that help you wrangle data. Tidyverse coding looks pretty different from normal R coding and we want to acquaint you with a few of those differences. Checkout the [Tidyverse website](#https://www.tidyverse.org) where it describes tidyverse as "an opinionated collection of R packages designed for data science. All packages share an underlying design philosophy, grammar, and data structures."
+
+The notion of a philosophy and grammar applied to data is really important.
+
+## Getting started
+
+*I assume that you have Rstudio installed and open and that you have the tidyverse already installed. Let me know if you don't.*
+
+Be sure and load the tidyverse by typing `library(tidyverse)`.
+
+To learn Tidyverse stuff and expand basic R familiarty (familiRity?), we will need an example dataset to work with. I hate to disappoint you but rather than look at R's commonly used built-in dataset called `mtcars`, lets look at `msleep` instead.
+
+### Look at the data
+
+Start by typing `glimpse(msleep)` and discuss the result.
+
+We will also use some fake data.
+
+```{r lookycars}
+glimpse(msleep)
+```
+
+What do you see?
+
+Before leaving today, make sure you have an understanding of the differences among
+
+`<chr>`
+
+`<dbl>`
+
+`<fct>`
+
+To really internalize how factors work takes some time. As homework homework and part of note-taking, write in descriptions of what each and how to work with them in the spaces above as you become more familiar.
+
+These datatypes (classes) will behave very differently across the R functions you will use and can really trip you up if you think or inadvertently assume a variable is one of them is really another (usually any issues have to do with factors).
+
+We will talk a lot more about these differences soon.
+
+For getting a handle on what your data look like, make sure you are familiar with:
+
+`head(msleep)` `tail(msleep)` `dim(msleep)` `View(msleep)`
+
+Is it clear what each of these is doing?
+
+## Example one: make fake data
+
+It is often useful to make fake data. This can help understand how a function works or make a simplified case of something you are trying to do on a more complicated dataset.
+
+Here's some fake data:
+
+```{r fakedata}
+library(random) # you will likely need to install this. 
+fake = data.frame(
+  PID = randomStrings(n=100, len=4), # a fake individual ID number
+  ukuk = rnorm(100, mean=50, sd=20), # 100 normally distributed random numbers with a mean of 50 and sd of 20
+  ooof = sample(c("a","b","c"), 100, replace=T)) # categories or responses of a, b, and c.
+
+```
+
+```{r fakedataquicklook}
+head(fake)
+glimpse(fake)
+```
+
+What else might you want to look at here, to summarize or get a sense of the data?
+
+Here we are doing more with fake data. For now don't worry too much what the code does, but lets return to this code chunk at the end of the session and talk about what its doing.
+
+```{r fakedata2}
+
+fake = fake %>% 
+  mutate(
+  input = c(1:100),
+  ick = case_when(
+  ooof == 'a' ~ 4.5 + .1*(input + rnorm(100,mean=0,sd=40)),
+  ooof == 'b' ~ 1.75+.1*(input + rnorm(100,mean=0, sd=30)),
+  ooof == 'c' ~ 6.75-.09*(input + rnorm(100, mean=0, sd=35))
+    )
+  ) %>% 
+ mutate(wha = sample(c(0,1),length(fake$ukuk),replace=TRUE),
+        across(where(is.character),as.factor),
+        #across(c(ukuk, ick), round,2))
+        mutate(across(where(is.numeric),round,2)))
+
+```
+
+-   In the the above code chunk, what seems the most unusual or different given what you are used to?
+
+-   Examine the data using the R functions covered above. Does it make sense to you?
+
+The main goal now is not just expose you to a diversity of functions and approaches to code - not necessarily to show you the most useful or best code.
+
+-   If you came across a code chunk like this online and you wanted to understand what it does, what are some things you can do to break it down? Confer with colleagues and write some ideas here:
+
+1.  
+
+2.  
+
+3.  
+
+What in the above code chunk is clearly a part of the tidyverse?
+
+### plot the fake data with ggplot
+
+```{r figickplot, fig.cap='Figure 1. We love this figure of ick', message=FALSE}
+ggplot(data = fake, aes(x = input, y=ick, color = ooof))+
+  geom_point()+
+  geom_smooth(method='lm')+
+  labs(x = 'new x label', y = 'new y labs', title = 'Amazing things we measured') +
+  theme(legend.position = "none") +
+  facet_wrap(.~ooof)
+
+```
+
+Figure out the following:
+
+In the above figure, what if we wanted to change the axis labels to something more specific?
+
+What if we didn't want to display the legend?
+
+What is another kind of plot that we might want to make with the data above?
+
+```{r}
+ggplot(fake, aes(x=ick, color = ooof))+
+  geom_density()
+```
+
+
+## Example comparing base R code and tidyverse code.
+
+We don't want to spend too much time on this, but will cover a few simple things in Base R, just so you are familiar with what we mean by Base R.
+
+We have the dataset from above - not the one I made up but the one about sleep in mammals. We want to get to know it better.
+
+type this somewhere:
+
+`sort(unique(msleep$conservation))`
+
+What do these results mean?
+
+Domesticated animals are probably different from the others, how would we filter them out?
+
+```{r}
+sleep_nodom = msleep[msleep$conservation != 'domesticated',]
+with(sleep_nodom, table(conservation))
+
+# we don't use it as much these days but the with() function is really convenient. 
+
+```
+
+How many domesticated animals are in the dataset? `length(which(msleep$conservation == 'domesticated'))`
+
+we should probably make a plot in the base R way too:
+
+```{r oldschoolplot}
+plot(sleep_nodom$bodywt, 
+     sleep_nodom$sleep_total,
+     log='x', xlab = 'Log Body Mass', ylab = 'Total Sleep Time') # units are missing but that's ok for now
+# quick regression 
+sleepmod1 = with(sleep_nodom, lm(sleep_total ~ log(bodywt))) # total sleep time as a function of log body weight
+# alternate code for this model: 
+# sleepmod1 =lm(sleep_total ~ log(bodywt), data = sleep_nodom)
+abline(sleepmod1)
+summary(sleepmod1)
+
+```
+
+### Doing the same things but in Tidyverse
+
+Compare this to base R line above starting with `length()`
+
+```{r}
+msleep %>% 
+  filter(conservation == 'domesticated') %>%
+  nrow()
+```
+
+How could you check this manually in R studio?
+
+Compare this to the base R above where we used `with` and `table`:
+
+```{r}
+# sleep_nodom2 %>%
+msleep %>% # uses a pipe and 'filter' to get rid of domesticated animals
+  filter(conservation != 'domesticated') %>%
+  # filter(conservation != 'domesticated' | is.na(conservation)) %>%
+  pull(conservation) %>%
+  table()
+# glimpse(sleep_nodom2)
+
+consstatus = msleep %>% # uses a pipe and 'filter' to get rid of domesticated animals
+  filter(conservation != 'domesticated') %>%
+  # filter(conservation != 'domesticated' | is.na(conservation)) %>%
+  pull(conservation)
+
+
+```
+
+Remembering that the pipe can be a substitute for the word 'than', write out what the above code does in your own words:
+
+<!-- In the code above replace `pull` with `select` and run the code again. How might we figure out what, if anything `pull` and `select` do differently?  -->
+
+Where is the information in the above code chunk stored in R's memory? If we wanted to save that simple table as an object to view later, how might we do it?
+
+Let's make a ggplot of this data too:
+
+```{r ggsleepplot, message=FALSE}
+msleep %>% # uses a pipe and 'filter' to get rid of domesticated animals
+  filter(conservation != 'domesticated' | is.na(conservation)) %>%
+ggplot(., aes(x=bodywt, y=sleep_total)) +
+  geom_point() +
+  scale_x_log10() +
+  geom_smooth(method = 'lm') + 
+  labs(x = 'Log Body Mass', y = 'Total Sleep Time')
+
+```
+
+### Looking more carefully at the value of pipes
+
+First, another fake dataset:
+
+```{r fdmake}
+a = data.frame(X = rep(12,25), Y = round(runif(25, 1, 25)), Z = round(rnorm(25, 12, 8)), 
+               x = sample(seq(0,25,5), 25, replace = T), y = sample(c('A','B','C'),25, replace = T), 
+               z = 1:25) # later on come back and look at the commands used here
+head(a)
+
+```
+
+Let's ignore the specifics of how `a` was made for now.
+
+Okay, check out this totally normal and functional code:
+
+```{r nopipe}
+
+summarise(
+   mutate(
+     filter(
+       select(a, X, Y, Z),
+       X > Y),
+     Q = X + Y + Z),
+   all = sum(Q)
+ )
+
+```
+
+And the equivalent with pipes:
+
+```{r tidyversion}
+
+a %>%
+   select(X, Y, Z) %>%
+   filter(X > Y) %>%
+   mutate(Q = X + Y + Z) %>%
+   summarise(all = sum(Q))
+ 
+```
+
+## Tidyverse verbs
+
+Verbs are what help you communicate with and transform your data from one form to another.
+
+### Select
+
+Primarily we use select to ...select columns from a data.frame (or tibble). We can also use it to re-arrange and rename columns.
+
+Okay, this is select example 1:
+
+```{r}
+msleep %>% select(genus, brainwt) # note that this does not create a new object!
+```
+
+This is select example 2:
+
+```{r}
+justsleep = msleep %>% select(order, starts_with('s'))
+justsleep
+```
+
+Let's compare the two examples. Why do they look different?
+
+Select example 2 has more columns than 1 - why?
+
+in Select example 2 we have this extra line where we write `justsleep` - why? why isn't there a similar line in example 1?
+
+Why is order in quotes in example 2 but genus is not in example 1? Does it matter?
+
+### Filter
+
+While Select works on columns, filter works on rows. You apply some rule that says which rows to include or exclude.
+
+Using the same `msleep` dataset, lets say we want to look at predators and prey... or meat eaters and bunnies:
+
+```{r}
+msleep %>% 
+  #filter(order == c('Carnivora', 'Lagomorpha')) %>%
+  filter(order %in% c('Carnivora')) %>%
+  select(name:sleep_total, -vore) # < what does that do?
+```
+
+A lot of our uses of `filter()` involves logical operators. This just means stuff like is equal to ==, not equal to != , greater than \>, etc. If you forget how to specify these, simply type\
+`?` `Comparison` in the console and you will see a breakdown.
+
+One thing you often do when filtering is remove missing values.
+
+Here we remove all the missing values from the column 'conservation':
+
+```{r}
+msleep %>% 
+  filter(!is.na(conservation))
+```
+
+What does the `!` do?
+
+Here we remove them from a whole dataset at once:
+
+```{r}
+msleep %>% na.omit()
+# compare: 
+summary(msleep)
+# to 
+summary(msleep %>% na.omit())
+```
+
+Take a close look at those two summaries. What is different about them? 
+
+
+
+I haven't been using the fake data i made above very much:
+
+```{r}
+fake %>% 
+  filter(wha == 1)%>%
+  filter(ukuk >= 25) %>%
+  nrow 
+```
+
+```{r}
+fake %>% 
+  filter(ooof == 'a') %>%
+  filter(wha == 1) %>%
+  filter(ukuk >= 25) %>%
+  tally()
+
+
+fake %>% 
+  filter(ooof == 'a',
+         wha == 1,
+         ukuk >= 25) %>%
+  tally()
+```
+
+Run the above code but exlude the last pipe and tally() (exclude the `%>% tally()`)
+
+```{r}
+fake %>% 
+  group_by(ooof) %>%
+  filter(wha == 1) %>%
+  filter(ukuk >= 25) %>%
+  tally() 
+
+```
+
+I snuck another verb in there!
+
+### group by
+
+Check this out. so useful:
+
+```{r}
+msleep %>% 
+ group_by(order) %>%
+ summarize(meanweight = mean(bodywt), sdweight = sd(bodywt, na.rm = TRUE))
+```
+
+What is going on with the above? Make sure you get each line. Did I sneak in another verb? What does it do?
+
+Modify the above code so that we get rid of all the NAs in sdweight
+
+```{r answer here}
+
+
+```
+
+
+### Mutate
+Mutate creates a new variable (column) in your dataset - that you get to define! - or modifies/redfines an existing one. 
+Yes, its as cool as it sounds.
+
+```{r}
+msleep %>% 
+  mutate(bodywt = bodywt * 1000)  %>% # convert kg to g, for example 
+  mutate(bbr = brainwt/bodywt) # brain to body weight ratio
+
+```
+
+```{r}
+xxsleep = msleep %>% 
+  mutate(bodywt = bodywt * 1000)  %>% # convert kg to g, for example 
+  mutate(bbr = brainwt/bodywt) %>% # make this ratio
+  select('name','genus','order','conservation', starts_with('sleep')) %>% # select certain columns - note what 'starts_with' does. 
+  filter(!is.na(conservation), !is.na(sleep_rem), !is.na(sleep_cycle)) %>% # remove missing values. 
+  mutate(arandomnumber = runif(n(),0,100), # just a column of random numbers 
+         across(where(is.numeric),round,1)) %>% # important! <- what does that do?
+  select(-sleep_cycle)
+
+head(xxsleep)
+```
+
+# Example from recent lab work 
+
+For Evolearn we are preparing a manuscript and 
+came across a common issue of data management and calculation. 
+
+The dataframe has many columns and we need to make a sum across a subset of them and save the sum as a new variable. 
+
+What do we do? 
+
+
+### Method one: 
+
+First, import a sample dataset 
+
+```{r qtexampdata}
+dnow = readRDS('data/reminarexamp.rds')
+```
+
+lets first examine this dataset from Evolearn
+
+```{r}
+dim(dnow)
+```
+
+Ordinarily i would start with 'names' or 'view' but note that we are dealing with 671 columns here. 
+
+Take a few moments and examine the dataset. 
+
+....
+
+Okay, first move is to figure out what we have to calculate: 
+
+ - the sum across several parts of a task, knox.
+
+ - the sum across several parts of another task, beads.
+ 
+Lydia will explain for a minute why we want these sums... 
+
+ - thank you Lydia, 
+ 
+Lets look at one approach to making these sums: 
+
+```{r}
+#create knox and beads totals, join with master
+qt <- dnow %>% dplyr::select(c("PID", num_range("knox_", 1:15), num_range("beads_", 1:10)))
+
+```
+
+Run the above and discuss what it does...
+
+Note the challenge of selecting the columns needed in the sum when they are interspersed with columns you don't want in the sum. 
+
+
+```{r}
+qt[,2:26] <- lapply(qt[,2:26], as.numeric)
+
+qt <- qt %>% 
+  mutate(knox_total = rowSums(qt[ , c(2:16)], na.rm=TRUE)) %>% 
+  mutate(beads_total = rowSums(qt[ , c(17:26)], na.rm=TRUE))
+
+qt <- qt[,c(1,27, 28)]
+
+dnow_test1 <- left_join(dnow, qt, by = "PID")
+```
+
+```{r}
+dnow_test1 %>% select(contains('knox')) %>% view()
+view(qt)
+```
+
+Discuss the code. How would you have done this? 
+Do you see any other ways to accomplish a similar end? 
+
+### Method 2
+
+
+Another way to say which columns to select is to note a pattern in the column names - they all have a name of the task and then a number separated by a _ . 
+
+What if we created vectors for exactly these column names? 
+
+```{r}
+knoxkey = paste('knox',seq(1:15),sep = "_")
+beadskey = paste('beads',seq(1:10),sep = "_")
+```
+
+
+
+
+```{r}
+dnow_test2 = dnow %>% 
+  mutate(across(c(knoxkey), as.numeric), # <- what is happening here?
+         across(c(beadskey), as.numeric)) %>%
+  mutate(knox_total = rowSums(across(c(knoxkey)), na.rm = TRUE),
+         beads_total = rowSums(across(c(beadskey)), na.rm = TRUE))
+```
+
+What other ways could you achieve the same result? 
+
+Is it clear what the above two methods are doing and how they are different? 
+
+
+
+
+

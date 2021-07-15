@@ -1,0 +1,143 @@
+---
+title: 'ReminarX: Version control and file creation'
+author: "oskar"
+date: "6/15/2021"
+output:
+  html_document: default
+  word_document: default
+---
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.path='Figs/',
+                      echo=FALSE, warning=FALSE, message=FALSE)
+```
+
+## Objectives
+
+We want to learn how to setup a github account and get Rstudio and github talking to each other.
+
+the main topics for today:
+
+1.  Github
+
+2.  Version control
+
+3.  Pushing and pulling
+
+4.  Knitting
+
+Full disclosure: I do not use Github to anywhere near its full capacity. It is meant for collaboration and version control, but I use it to backup my individual projects. I am hoping that this reminar will help me use more of Github's features going forward.
+
+Github's workflow is focally designed for software development, but is becoming increasingly popular for collaborative academic research projects. It is a great way to store and improve your R code. It is also great for publishing informal papers or blogs, preprints, or other writing like manuals.
+
+## Procedure
+
+1.  First, did everyone setup a github account? Let's do that right away, if not.
+
+    Got to github.com and follow the prompts to start an account. Give it a logical and professional name, with the outlook that you will house your dissertation and other major academic outputs here.
+
+2.  Decide where on your machine you want to store the repository we are about to make. A folder in a logical location, probably where you kept previous reminars.
+
+3.  Go to github and make a new repository.
+
+    1.  give it a good name
+
+    2.  set to public
+
+    3.  initialize with Readme
+
+    4.  create repository
+
+4.  Create a new project in Rstudio
+
+    1.  file - new project - version control -- Git
+
+5.  Assign the repository to the folder are your computer where you want to store it. *careful, i have overlooked this a couple times and its a pain*
+
+6.  Copy the url to clone the repository from github to Rstudio.
+
+7.  Pray to any gods you believe in, knock on wood, and hold your breath.
+
+Now that is going smoothly, lets push and pull
+
+## Pushing and Pulling
+
+1.  create an Rmarkdown file in this directory.
+
+    1.  you know how to do that, so i won't say how here.
+
+2.  lets make up some analysis really quick, in this rmd. you can analyze the sleep data or the car data.
+
+    1.  make at least one plot with ggplot
+
+3.  Knit to html.
+
+4.  Knit to word.
+
+5.  click on the tab that says 'Git'
+
+    1.  find the rmd file you just created
+
+    2.  check the box by it. this is called 'staging'
+
+    3.  select 'commit'
+
+    4.  make a comment.
+
+    5.  push!
+
+    6.  Go to github and see if ya see it.
+
+6.  Take previous reminar rmd and put it in this directory
+
+    1.  commit and push it.
+
+7.  Go to github, edit the readme file.
+
+    1.  go to Rstudio 'pull' the readme file
+
+    2.  open it and see if it is there.
+
+There are many other things we could and should cover here.
+
+-   what happens if your pushing and pulling gets out of sync? Try to avoid this but rest assured it is fixable if it happens.
+
+-   How to collaborate on documents via github? This is, in fact, the whole point. We will talk about the github workflow next week.
+
+Terms we should really probably have defined by now:
+
+-   commit
+
+-   push
+
+-   pull
+
+-   branching
+
+-   project (how are they different from file?)
+
+-   knit, knitting
+
+-   code chunk
+
+## Practice
+
+Make an edit to an rmd, save it, commit it, push it, repeat.
+
+## Possible experiment
+
+can we figure out how to branch and fork my reminar repository?
+
+-   find my version and open a pull request
+
+OR
+
+-   discuss or look at different chunk options and issues that come up with knitting to different formats
+
+## Next steps
+
+-   we will continue to use the Rstudio to Github interface as we go forward. It takes some practice and we need to push ourselves to learn the new features.
+
+-   we need to cover the concepts of tidy data and will do that next week.
+
+-   Other suggestions for things to cover next?
